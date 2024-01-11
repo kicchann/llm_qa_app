@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// Craft rules based on data in your Firestore database
+// allow write: if firestore.get(
+//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{uid} {
+      match /image/{allFiles=**} {
+        allow create, read, update: if isTheSameUserOrAdmin(uid);
+        allow delete: if false;
+      }
+      match /contents/{allPaths=**} {
+        allow create, read, delete: if isTheSameUserOrAdmin(uid);
+        allow update: if false;
+      }
+      match /indexes/{allPaths=**} {
+        allow create, read, delete: if isTheSameUserOrAdmin(uid);
+        allow update: if false;
+      }
+      match /docments/{allPaths=**} {
+        allow create, read, delete: if isTheSameUserOrAdmin(uid);
+        allow update: if false;
+      }
+    }
+  }
+
+  function isAuthenticated() {
+  	return request.auth != null;
+  }
+
+  function isTheSameUserOrAdmin(uid) {
+    return request.auth.uid == uid  || isAdmin();
+  }
+
+  function isAdmin() {
+    return request.auth.uid == "AdminUid";
+  }
+}
